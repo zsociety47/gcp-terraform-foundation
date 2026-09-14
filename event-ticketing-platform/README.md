@@ -10,10 +10,13 @@ Minimal frontend scaffold for the GCP foundation sprint parallel track.
 
 **Not yet (later days):** checkout, organizer dashboard, FastAPI backend, agents.
 
+<<<<<<< HEAD
 ## Documentation
 
 See [docs/README.md](docs/README.md) — architecture, UI design direction, and ADRs.
 
+=======
+>>>>>>> origin/main
 ## Run locally
 
 ```bash
