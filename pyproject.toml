@@ -1,0 +1,44 @@
+[project]
+name = "gcp-terraform-foundation-scripts"
+version = "0.1.0"
+description = "Python scripts for GCP Terraform foundation bootstrap, teardown, and automation"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-cloud-storage>=2.18.0",
+    "google-cloud-resource-manager>=1.12.0",
+    "click>=8.1.7",
+    "rich>=13.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "mypy>=1.13.0",
+    "ruff>=0.8.0",
+    "black>=24.10.0",
+]
+
+[project.scripts]
+gcp-bootstrap = "scripts.bootstrap:main"
+gcp-teardown = "scripts.teardown:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
