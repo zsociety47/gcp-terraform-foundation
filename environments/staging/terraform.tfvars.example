@@ -1,3 +1,0 @@
-project_id  = "your-gcp-project-id-staging"
-region      = "us-central1"
-environment = "staging"

@@ -1,27 +1,21 @@
 # gcp-terraform-foundation
 
-Reusable, versioned Terraform modules that underpin the [Event Ticketing Platform](https://github.com/zsociety47/event-ticketing-platform) and future GCP weekly projects.
+Reusable Terraform modules for the Event Ticketing Platform GCP foundation sprint.
 
-## What This Repo Is
+## Day 0 — Setup only
 
-A **multi-module Terraform foundation** designed for:
-
-- Multiple independently-deployed microservices (forecasting agent, fraud detection, organizer copilot, notifications, search)
-- Dev / staging / prod environment separation
-- Remote state in GCS (bootstrapped by this repo itself)
-- Cross-cloud expansion (notifications service will eventually move off GCP)
-
-## Quick Start
+Day 0 does **not** create cloud resources with Terraform. You install tools, create a GCP project, authenticate `gcloud`, configure the **gcloud MCP** server in Cursor, and verify everything with the checklist in [docs/day-0-setup-log.md](docs/day-0-setup-log.md).
 
 ### Prerequisites
 
-| Tool | Version | Purpose |
+| Tool | Minimum | Check |
 |---|---|---|
-| [Terraform](https://www.terraform.io/downloads) | ≥ 1.9 | Infrastructure as code |
-| [gcloud CLI](https://cloud.google.com/sdk/docs/install) | latest | GCP authentication & project management |
-| Python | ≥ 3.12 | Bootstrap/teardown scripts |
+| [Terraform](https://www.terraform.io/downloads) | 1.9+ | `terraform version` |
+| [gcloud CLI](https://cloud.google.com/sdk/docs/install) | latest | `gcloud version` |
+| Node.js | 20+ | `node --version` (for gcloud-mcp) |
+| Python | 3.12+ | `python3 --version` |
 
-### 1. Clone and configure
+### 1. Clone and Python scripts package (minimal)
 
 ```bash
 git clone https://github.com/zsociety47/gcp-terraform-foundation.git
@@ -30,93 +24,73 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Create a GCP project
+Automation scripts (`bootstrap.py`, `teardown.py`) are added on **Day 1** and **Day 12**.
+
+### 2. Create your GCP project (browser + CLI)
+
+1. Sign in at [Google Cloud Console](https://console.cloud.google.com).
+2. Create a **billing account** and note the Billing Account ID (`XXXXXX-XXXXXX-XXXXXX`).
+3. Create a project (ID must be globally unique), e.g. `ticketflow-foundation-dev`:
 
 ```bash
 gcloud projects create YOUR_PROJECT_ID --name="Foundation Dev"
-gcloud billing projects link YOUR_PROJECT_ID --billing-account=YOUR_BILLING_ACCOUNT
+gcloud billing projects link YOUR_PROJECT_ID --billing-account=YOUR_BILLING_ID
 gcloud config set project YOUR_PROJECT_ID
 ```
 
-### 3. Bootstrap remote state
+4. Authenticate:
 
 ```bash
-cp environments/dev/terraform.tfvars.example environments/dev/terraform.tfvars
-# Edit terraform.tfvars with your project ID
-
-terraform init
-terraform apply -var-file=environments/dev/terraform.tfvars
+gcloud auth login
+gcloud auth application-default login
 ```
 
-### 4. Migrate to remote backend
+5. Enable Storage API (needed for Day 1 state bucket):
 
 ```bash
-cp backend.tf.example backend.tf
-# Edit bucket name in backend.tf
-terraform init -migrate-state
+gcloud services enable storage.googleapis.com --project=YOUR_PROJECT_ID
 ```
 
-### 5. Tear down (cost control)
+Copy `environments/dev/terraform.tfvars.example` to `environments/dev/terraform.tfvars` with your project ID. Do **not** commit `terraform.tfvars` (ignored by git).
 
-```bash
-python scripts/teardown.py --project-id YOUR_PROJECT_ID --environment dev
+### 3. gcloud MCP in Cursor
+
+This repo includes [`.cursor/mcp.json`](.cursor/mcp.json):
+
+```json
+{
+  "mcpServers": {
+    "gcloud": {
+      "command": "npx",
+      "args": ["-y", "@google-cloud/gcloud-mcp"]
+    }
+  }
+}
 ```
 
-## Repository Layout
+Reload Cursor MCP / the window, confirm **gcloud** is connected, then run a read-only check (e.g. describe your project). Record results in [docs/day-0-setup-log.md](docs/day-0-setup-log.md).
+
+### 4. Ticketing platform scaffold (parallel track)
+
+See [event-ticketing-platform/README.md](event-ticketing-platform/README.md) — one event page with ticket tier display.
+
+## Repository layout (Day 0)
 
 ```
 gcp-terraform-foundation/
-├── modules/
-│   ├── bootstrap/          # GCS state bucket + backup bucket (Day 1)
-│   ├── network/            # VPC, NAT, firewall (Days 2–4)
-│   ├── identity/           # IAM, service accounts (Day 5)
-│   ├── messaging/          # Pub/Sub topics (Day 7)
-│   ├── compute-vm/         # Compute Engine (Day 8)
-│   ├── compute-app-engine/ # App Engine (Day 9)
-│   └── compute-functions/  # Cloud Functions (Day 10)
-├── environments/
-│   ├── dev/
-│   ├── staging/
-│   └── prod/
-├── scripts/
-│   ├── bootstrap.py        # Automated state bootstrap
-│   └── teardown.py         # Cost-control teardown
-├── docs/
-│   ├── architecture/       # Technical architecture docs
-│   ├── concepts/           # Per-concept docs (Why / Terraform / Interview Q&A)
-│   ├── decisions/          # Architecture Decision Records (ADRs)
-│   └── cross-cloud-glossary.md
-└── tests/                  # terraform validate + Python tests
+├── .cursor/mcp.json
+├── docs/day-0-setup-log.md
+├── environments/dev/terraform.tfvars.example
+├── scripts/__init__.py          # Day 1+ scripts go here
+├── variables.tf
+├── versions.tf                  # providers only — no resources yet
+└── event-ticketing-platform/    # separate repo later; Day 0 UI scaffold
 ```
 
-## Module Roadmap
+## What comes on Day 1
 
-| Sprint Day | Module | Status |
-|---|---|---|
-| Day 1 | Bootstrap (state bucket + backup lifecycle) | 🟡 In progress |
-| Days 2–4 | Network (VPC, NAT, firewall, hybrid stub) | ⬜ Planned |
-| Day 5 | Identity (IAM, per-service accounts) | ⬜ Planned |
-| Day 7 | Messaging (Pub/Sub) | ⬜ Planned |
-| Days 8–10 | Compute (VM, App Engine, Functions) | ⬜ Planned |
-| Day 11 | Secrets & environments | ⬜ Planned |
-| Day 12 | Cost control & CI/CD | ⬜ Planned |
+- `modules/bootstrap/` — GCS state bucket
+- First `terraform apply`
+- Concept doc: Terraform Remote State
 
-## Documentation
-
-- [Technical Architecture](docs/architecture/technical-architecture.md) — how modules compose and connect
-- [Platform Context](docs/architecture/platform-context.md) — the ticketing platform this foundation supports
-- [Sprint Plan](docs/sprint-plan.md) — two-week day-by-day schedule
-- [Cross-Cloud Glossary](docs/cross-cloud-glossary.md) — GCP / Azure / AWS terminology mapping
-- [ADRs](docs/decisions/) — architecture decision records
-- [Concept Docs](docs/concepts/) — per-service deep dives (Why / Terraform / Interview Q&A)
-
-## Related Repos
-
-| Repo | Purpose |
-|---|---|
-| **gcp-terraform-foundation** (this repo) | Shared Terraform modules |
-| [event-ticketing-platform](https://github.com/zsociety47/event-ticketing-platform) | FastAPI + React ticketing app + LangGraph agents |
-
-## License
-
-MIT
+One sprint day = one PR. Do not merge until that day's verification checklist passes.
