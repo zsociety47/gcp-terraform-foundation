@@ -7,7 +7,7 @@
 | Day | Foundation Focus | Status |
 |---|---|---|
 | Day 0 (setup) | Repo & tooling setup | 🟢 This commit |
-| Day 1 | State bootstrap + Automated Backup add-on | ⬜ |
+| Day 1 | State bootstrap + Automated Backup add-on (multiple deliverables — see below) | ⬜ |
 | Day 2 | Network module — VPC core | ⬜ |
 | Day 3 | Network module — NAT & routing | ⬜ |
 | Day 4 | Network module — firewall & hybrid stub | ⬜ |
@@ -25,6 +25,17 @@
 | Day 11 | Secrets & environments | ⬜ |
 | Day 12 | Cost control & CI/CD | ⬜ |
 | Day 13 | Wrap-up, end-to-end test, demo | ⬜ |
+
+## Day 1 deliverables (one PR each)
+
+Work in order; merge or approve each before starting the next. Details: [contributing-workflow.md](contributing-workflow.md).
+
+| Order | Deliverable | Code (summary) | Concept doc |
+|---|---|---|---|
+| 1 | State bucket bootstrap | `modules/bootstrap/` state bucket only, `main.tf`, `outputs.tf`, `backend.tf.example`, validate test | [terraform-remote-state.md](concepts/terraform-remote-state.md) |
+| 2 | Backup bucket + lifecycle | Extend bootstrap module (backup bucket, Nearline/Archive) | `gcs-lifecycle-backups.md` (new) |
+| 3 | Remote backend migration | Setup log steps; optional minimal `scripts/bootstrap.py` | Remote state doc — Migration section |
+| 4 | Automated backup add-on | Cloud Workflows / scheduler (sprint add-on) | TBD when started |
 
 ## Documentation Cadence
 
