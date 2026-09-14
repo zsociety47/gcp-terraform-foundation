@@ -1,43 +1,101 @@
 # Terraform Remote State
 
-> **Day 1 placeholder.** The **Why** and **Interview questions** below are stable reference material. The **Terraform** section with live module paths will be filled in when the Day 1 PR adds `modules/bootstrap/` and `main.tf`. Until then, use [\_template.md](_template.md) and verify snippets against the repo after merge.
-
 ## Why
 
 Terraform tracks the mapping between your configuration and real infrastructure in a **state file**. By default this is a local `terraform.tfstate` file — fine for solo experiments, problematic for teams:
 
-- **No locking** — two people running `apply` simultaneously can corrupt state  
-- **No sharing** — teammates cannot see what is deployed  
-- **No backup** — delete the file, lose track of resources  
-- **Secrets in plaintext** — state can contain sensitive resource attributes  
+- **No locking** — two people running `apply` simultaneously can corrupt state
+- **No sharing** — teammates cannot see what is deployed
+- **No backup** — delete the file, lose track of all resources
+- **Secrets in plaintext** — state files contain resource attributes including sensitive values
 
-Remote state in GCS provides centralized storage, versioning, IAM-controlled access, and locking suitable for CI/CD.
+Remote state in GCS solves all four: centralized, versioned, access-controlled, with native locking.
 
-For this project, the state bucket will be the **first** resource the bootstrap module creates (Day 1).
+For this project, the state bucket is the **first** resource the bootstrap module creates — anyone cloning the repo can bootstrap their own state independently.
+
+**Deliverable 1 scope:** state bucket only. Backup bucket, lifecycle add-ons, and `terraform init -migrate-state` steps are [Deliverable 2–3](../sprint-plan.md#day-1-deliverables-one-pr-each).
 
 ## Terraform
 
-_To be added on Day 1:_
+### Bootstrap module — state bucket (`modules/bootstrap/main.tf`)
 
-- `modules/bootstrap/main.tf` — GCS bucket with versioning  
-- `backend.tf.example` — remote backend configuration  
-- Bootstrap flow: local apply → configure backend → `terraform init -migrate-state`  
+```hcl
+resource "google_storage_bucket" "terraform_state" {
+  name     = "${var.project_id}-tfstate-${var.environment}"
+  location = var.region
+  project  = var.project_id
 
-Follow the Day 1 PR and copy code from the repo; do not rely on outdated snippets here.
+  uniform_bucket_level_access = true
+  force_destroy               = var.environment == "dev"
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  labels = {
+    purpose     = "terraform-state"
+    environment = var.environment
+    managed_by  = "gcp-terraform-foundation"
+  }
+}
+```
+
+### Root module wiring (`main.tf`)
+
+```hcl
+module "bootstrap" {
+  source = "./modules/bootstrap"
+
+  project_id  = var.project_id
+  region      = var.region
+  environment = var.environment
+}
+```
+
+### Backend configuration (`backend.tf.example`)
+
+```hcl
+terraform {
+  backend "gcs" {
+    bucket = "YOUR_PROJECT_ID-tfstate-dev"
+    prefix = "foundation"
+  }
+}
+```
+
+### First-time bootstrap flow (Deliverable 1)
+
+```bash
+# 1. Apply with local state (creates the bucket)
+terraform apply -var-file=environments/dev/terraform.tfvars
+
+# 2. Configure remote backend (Deliverable 3 — migration steps)
+cp backend.tf.example backend.tf
+# Edit bucket name, then: terraform init -migrate-state
+```
 
 ## Interview Questions
 
 **Q: Why not use local state?**  
-A: Local state lacks locking and sharing. Concurrent applies or CI runs can corrupt state; remote backends (GCS, S3, Azure Blob) add locking and centralized access.
+A: Local state does not support locking, sharing, or versioning. In a team or CI/CD pipeline, concurrent applies will corrupt state. Remote backends (GCS, S3, Azure Blob) provide locking and centralized access.
 
 **Q: What happens if two people run `terraform apply` at the same time?**  
-A: With a remote backend that supports locking (GCS does), the second apply waits until the first releases the lock. Without locking, last write wins and resources can be orphaned.
+A: With a remote backend that supports locking (GCS does natively), the second apply blocks until the first completes and releases the lock. Without locking, both reads the same state, both apply changes, and the last write wins — potentially orphaning resources.
 
 **Q: Should you commit `terraform.tfstate` to git?**  
-A: No. Use remote state with access controls; state may contain sensitive values.
+A: No. State files contain sensitive values (database passwords, API keys in resource attributes). Use remote state with access controls instead.
 
 **Q: What's the difference between `terraform init` and `terraform init -migrate-state`?**  
-A: `-migrate-state` copies existing local state into a newly configured remote backend.
+A: Regular `init` downloads providers and configures the backend. `-migrate-state` additionally copies existing local state into the newly configured remote backend, then deletes the local file.
 
 **Q: How do you handle state for multiple environments?**  
-A: Separate state per environment — different GCS prefixes or buckets, often paired with separate GCP projects as in [ADR 003](../decisions/003-separate-gcp-project-per-build.md).
+A: Separate state files per environment — either via different `prefix` values in the same bucket (`foundation/dev`, `foundation/staging`) or separate buckets entirely. This project uses separate GCP projects per environment with bucket naming `{project_id}-tfstate-{environment}`.

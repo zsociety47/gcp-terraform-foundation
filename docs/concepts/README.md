@@ -10,7 +10,7 @@ One page per GCP concept, added as modules are built during the sprint. Each doc
 
 | Concept | Sprint day | Doc | Status |
 |---|---|---|---|
-| Terraform Remote State | Day 1 | [terraform-remote-state.md](terraform-remote-state.md) | Stub until Day 1 merge |
+| Terraform Remote State | Day 1 (deliverable 1) | [terraform-remote-state.md](terraform-remote-state.md) | State bucket — migration in deliverable 3 |
 | VPC Design | Day 2 | _(add `vpc-design.md`)_ | Planned |
 | Cloud NAT & Hybrid Connectivity | Day 3 | _(add `cloud-nat-hybrid.md`)_ | Planned |
 | Firewall Rules | Day 4 | _(add `firewall-rules.md`)_ | Planned |
