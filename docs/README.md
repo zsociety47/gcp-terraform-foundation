@@ -27,7 +27,7 @@ See [concepts/README.md](concepts/README.md) for the full index and [concepts/_t
 
 | Concept | Status |
 |---|---|
-| [Terraform Remote State](concepts/terraform-remote-state.md) | Stub — Day 1 |
+| [Terraform Remote State](concepts/terraform-remote-state.md) | Day 1 deliverable 1 (state bucket) |
 | VPC Design | Planned — Day 2 |
 | Cloud NAT & Hybrid Connectivity | Planned — Day 3 |
 | Firewall Rules | Planned — Day 4 |

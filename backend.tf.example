@@ -1,0 +1,13 @@
+# Copy to backend.tf after the state bucket exists (first apply uses local state).
+#
+#   cp backend.tf.example backend.tf
+#   terraform init -migrate-state
+#
+# Replace YOUR_PROJECT_ID and environment in the bucket name.
+
+terraform {
+  backend "gcs" {
+    bucket = "YOUR_PROJECT_ID-tfstate-dev"
+    prefix = "foundation"
+  }
+}
