@@ -74,12 +74,26 @@ Reload Cursor MCP / the window, confirm **gcloud** is connected, then run a read
 
 See [event-ticketing-platform/README.md](event-ticketing-platform/README.md) — one event page with ticket tier display.
 
+## Documentation
+
+| Start here | Description |
+|---|---|
+| [docs/README.md](docs/README.md) | Full documentation index |
+| [docs/day-0-setup-log.md](docs/day-0-setup-log.md) | Day 0 verification checklist |
+| [docs/sprint-plan.md](docs/sprint-plan.md) | Two-week sprint schedule |
+| [docs/cross-cloud-glossary.md](docs/cross-cloud-glossary.md) | GCP / Azure / AWS terms |
+| [docs/architecture/](docs/architecture/) | Target technical architecture |
+| [docs/decisions/](docs/decisions/) | Architecture decision records |
+| [docs/concepts/](docs/concepts/) | Per-concept docs (added one per sprint day) |
+
+Platform UI and service docs: [event-ticketing-platform/docs/README.md](event-ticketing-platform/docs/README.md).
+
 ## Repository layout (Day 0)
 
 ```
 gcp-terraform-foundation/
 ├── .cursor/mcp.json
-├── docs/day-0-setup-log.md
+├── docs/                        # navigation, sprint plan, ADRs, glossary
 ├── environments/dev/terraform.tfvars.example
 ├── scripts/__init__.py          # Day 1+ scripts go here
 ├── variables.tf
