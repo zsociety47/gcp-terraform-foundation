@@ -6,6 +6,7 @@ Navigate the `gcp-terraform-foundation` docs by purpose:
 
 | Document | Description |
 |---|---|
+| [Contributing workflow](contributing-workflow.md) | One deliverable per PR — how we work incrementally |
 | [Day 0 Setup Log](day-0-setup-log.md) | Tools, GCP project, gcloud MCP, verification checklist |
 
 ## Architecture

@@ -103,8 +103,6 @@ gcp-terraform-foundation/
 
 ## What comes on Day 1
 
-- `modules/bootstrap/` — GCS state bucket
-- First `terraform apply`
-- Concept doc: Terraform Remote State
+Day 1 is split into **deliverables** (one PR each). First up: state bucket bootstrap + [Terraform Remote State](docs/concepts/terraform-remote-state.md). See [docs/sprint-plan.md](docs/sprint-plan.md) and [docs/contributing-workflow.md](docs/contributing-workflow.md).
 
-One sprint day = one PR. Do not merge until that day's verification checklist passes.
+**One deliverable = one PR.** Merge and verify before starting the next deliverable.
